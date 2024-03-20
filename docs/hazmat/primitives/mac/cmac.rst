@@ -1,7 +1,7 @@
 .. hazmat::
 
-Cipher-based message authentication code
-========================================
+Cipher-based message authentication code (CMAC)
+===============================================
 
 .. currentmodule:: cryptography.hazmat.primitives.cmac
 
@@ -17,54 +17,44 @@ of a message.
 
 A subset of CMAC with the AES-128 algorithm is described in :rfc:`4493`.
 
-.. class:: CMAC(algorithm, backend)
+.. class:: CMAC(algorithm)
 
     .. versionadded:: 0.4
 
     CMAC objects take a
-    :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm` provider.
+    :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm` instance.
 
     .. doctest::
 
-        >>> from cryptography.hazmat.backends import default_backend
         >>> from cryptography.hazmat.primitives import cmac
         >>> from cryptography.hazmat.primitives.ciphers import algorithms
-        >>> c = cmac.CMAC(algorithms.AES(key), backend=default_backend())
+        >>> c = cmac.CMAC(algorithms.AES(key))
         >>> c.update(b"message to authenticate")
         >>> c.finalize()
-        'CT\x1d\xc8\x0e\x15\xbe4e\xdb\xb6\x84\xca\xd9Xk'
-
-    If the backend doesn't support the requested ``algorithm`` an
-    :class:`~cryptography.exceptions.UnsupportedAlgorithm` exception will be
-    raised.
+        b'CT\x1d\xc8\x0e\x15\xbe4e\xdb\xb6\x84\xca\xd9Xk'
 
     If ``algorithm`` isn't a
     :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
-    provider then ``TypeError`` will be raised.
+    instance then ``TypeError`` will be raised.
 
     To check that a given signature is correct use the :meth:`verify` method.
     You will receive an exception if the signature is wrong:
 
     .. doctest::
 
-        >>> c = cmac.CMAC(algorithms.AES(key), backend=default_backend())
+        >>> c = cmac.CMAC(algorithms.AES(key))
         >>> c.update(b"message to authenticate")
         >>> c.verify(b"an incorrect signature")
         Traceback (most recent call last):
         ...
         cryptography.exceptions.InvalidSignature: Signature did not match digest.
 
-    :param algorithm: An
-        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
-        provider.
-    :param backend: An
-        :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`
-        provider.
+    :param algorithm: An instance of
+        :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`.
     :raises TypeError: This is raised if the provided ``algorithm`` is not an instance of
         :class:`~cryptography.hazmat.primitives.ciphers.BlockCipherAlgorithm`
     :raises cryptography.exceptions.UnsupportedAlgorithm: This is raised if the
-        provided ``backend`` does not implement
-        :class:`~cryptography.hazmat.backends.interfaces.CMACBackend`
+        provided ``algorithm`` is unsupported.
 
     .. method:: update(data)
 

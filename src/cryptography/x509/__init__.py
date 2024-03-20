@@ -2,39 +2,103 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import, division, print_function
+from __future__ import annotations
 
+from cryptography.x509 import certificate_transparency, verification
 from cryptography.x509.base import (
-    Certificate, CertificateBuilder, CertificateRevocationList,
+    Attribute,
+    AttributeNotFound,
+    Attributes,
+    Certificate,
+    CertificateBuilder,
+    CertificateRevocationList,
     CertificateRevocationListBuilder,
-    CertificateSigningRequest, CertificateSigningRequestBuilder,
-    InvalidVersion, RevokedCertificate, RevokedCertificateBuilder,
-    Version, load_der_x509_certificate, load_der_x509_crl, load_der_x509_csr,
-    load_pem_x509_certificate, load_pem_x509_crl, load_pem_x509_csr,
+    CertificateSigningRequest,
+    CertificateSigningRequestBuilder,
+    InvalidVersion,
+    RevokedCertificate,
+    RevokedCertificateBuilder,
+    Version,
+    load_der_x509_certificate,
+    load_der_x509_crl,
+    load_der_x509_csr,
+    load_pem_x509_certificate,
+    load_pem_x509_certificates,
+    load_pem_x509_crl,
+    load_pem_x509_csr,
+    random_serial_number,
 )
 from cryptography.x509.extensions import (
-    AccessDescription, AuthorityInformationAccess,
-    AuthorityKeyIdentifier, BasicConstraints, CRLDistributionPoints,
-    CRLNumber, CRLReason, CertificateIssuer, CertificatePolicies,
-    DistributionPoint, DuplicateExtension, ExtendedKeyUsage, Extension,
-    ExtensionNotFound, ExtensionType, Extensions, GeneralNames,
-    InhibitAnyPolicy, InvalidityDate, IssuerAlternativeName, KeyUsage,
-    NameConstraints, NoticeReference, OCSPNoCheck, PolicyInformation,
-    ReasonFlags, SubjectAlternativeName, SubjectKeyIdentifier,
-    UnrecognizedExtension, UnsupportedExtension, UserNotice
+    AccessDescription,
+    AuthorityInformationAccess,
+    AuthorityKeyIdentifier,
+    BasicConstraints,
+    CertificateIssuer,
+    CertificatePolicies,
+    CRLDistributionPoints,
+    CRLNumber,
+    CRLReason,
+    DeltaCRLIndicator,
+    DistributionPoint,
+    DuplicateExtension,
+    ExtendedKeyUsage,
+    Extension,
+    ExtensionNotFound,
+    Extensions,
+    ExtensionType,
+    FreshestCRL,
+    GeneralNames,
+    InhibitAnyPolicy,
+    InvalidityDate,
+    IssuerAlternativeName,
+    IssuingDistributionPoint,
+    KeyUsage,
+    MSCertificateTemplate,
+    NameConstraints,
+    NoticeReference,
+    OCSPAcceptableResponses,
+    OCSPNoCheck,
+    OCSPNonce,
+    PolicyConstraints,
+    PolicyInformation,
+    PrecertificateSignedCertificateTimestamps,
+    PrecertPoison,
+    ReasonFlags,
+    SignedCertificateTimestamps,
+    SubjectAlternativeName,
+    SubjectInformationAccess,
+    SubjectKeyIdentifier,
+    TLSFeature,
+    TLSFeatureType,
+    UnrecognizedExtension,
+    UserNotice,
 )
 from cryptography.x509.general_name import (
-    DNSName, DirectoryName, GeneralName, IPAddress, OtherName, RFC822Name,
-    RegisteredID, UniformResourceIdentifier, UnsupportedGeneralNameType,
-    _GENERAL_NAMES
+    DirectoryName,
+    DNSName,
+    GeneralName,
+    IPAddress,
+    OtherName,
+    RegisteredID,
+    RFC822Name,
+    UniformResourceIdentifier,
+    UnsupportedGeneralNameType,
 )
-from cryptography.x509.name import Name, NameAttribute
+from cryptography.x509.name import (
+    Name,
+    NameAttribute,
+    RelativeDistinguishedName,
+)
 from cryptography.x509.oid import (
-    AuthorityInformationAccessOID, CRLEntryExtensionOID, CRLExtensionOID,
-    CertificatePoliciesOID, ExtendedKeyUsageOID, ExtensionOID, NameOID,
-    ObjectIdentifier, SignatureAlgorithmOID, _SIG_OIDS_TO_HASH
+    AuthorityInformationAccessOID,
+    CertificatePoliciesOID,
+    CRLEntryExtensionOID,
+    ExtendedKeyUsageOID,
+    ExtensionOID,
+    NameOID,
+    ObjectIdentifier,
+    SignatureAlgorithmOID,
 )
-
 
 OID_AUTHORITY_INFORMATION_ACCESS = ExtensionOID.AUTHORITY_INFORMATION_ACCESS
 OID_AUTHORITY_KEY_IDENTIFIER = ExtensionOID.AUTHORITY_KEY_IDENTIFIER
@@ -69,6 +133,7 @@ OID_RSA_WITH_SHA224 = SignatureAlgorithmOID.RSA_WITH_SHA224
 OID_RSA_WITH_SHA256 = SignatureAlgorithmOID.RSA_WITH_SHA256
 OID_RSA_WITH_SHA384 = SignatureAlgorithmOID.RSA_WITH_SHA384
 OID_RSA_WITH_SHA512 = SignatureAlgorithmOID.RSA_WITH_SHA512
+OID_RSASSA_PSS = SignatureAlgorithmOID.RSASSA_PSS
 
 OID_COMMON_NAME = NameOID.COMMON_NAME
 OID_COUNTRY_NAME = NameOID.COUNTRY_NAME
@@ -104,31 +169,45 @@ OID_INVALIDITY_DATE = CRLEntryExtensionOID.INVALIDITY_DATE
 OID_CA_ISSUERS = AuthorityInformationAccessOID.CA_ISSUERS
 OID_OCSP = AuthorityInformationAccessOID.OCSP
 
-
 __all__ = [
+    "certificate_transparency",
+    "verification",
     "load_pem_x509_certificate",
+    "load_pem_x509_certificates",
     "load_der_x509_certificate",
     "load_pem_x509_csr",
     "load_der_x509_csr",
     "load_pem_x509_crl",
     "load_der_x509_crl",
+    "random_serial_number",
+    "verification",
+    "Attribute",
+    "AttributeNotFound",
+    "Attributes",
     "InvalidVersion",
+    "DeltaCRLIndicator",
     "DuplicateExtension",
-    "UnsupportedExtension",
     "ExtensionNotFound",
     "UnsupportedGeneralNameType",
     "NameAttribute",
     "Name",
+    "RelativeDistinguishedName",
     "ObjectIdentifier",
     "ExtensionType",
     "Extensions",
     "Extension",
     "ExtendedKeyUsage",
+    "FreshestCRL",
+    "IssuingDistributionPoint",
+    "TLSFeature",
+    "TLSFeatureType",
+    "OCSPAcceptableResponses",
     "OCSPNoCheck",
     "BasicConstraints",
     "CRLNumber",
     "KeyUsage",
     "AuthorityInformationAccess",
+    "SubjectInformationAccess",
     "AccessDescription",
     "CertificatePolicies",
     "PolicyInformation",
@@ -161,13 +240,18 @@ __all__ = [
     "CertificateSigningRequestBuilder",
     "CertificateBuilder",
     "Version",
-    "_SIG_OIDS_TO_HASH",
     "OID_CA_ISSUERS",
     "OID_OCSP",
-    "_GENERAL_NAMES",
-    "CRLExtensionOID",
     "CertificateIssuer",
     "CRLReason",
     "InvalidityDate",
     "UnrecognizedExtension",
+    "PolicyConstraints",
+    "PrecertificateSignedCertificateTimestamps",
+    "PrecertPoison",
+    "OCSPNonce",
+    "SignedCertificateTimestamps",
+    "SignatureAlgorithmOID",
+    "NameOID",
+    "MSCertificateTemplate",
 ]
